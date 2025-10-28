@@ -5,18 +5,40 @@ import { LoginCredentials } from "../lib/type";
 import { userQueryKeys } from "@/entities/user/api/auth-hooks";
 import { api } from "@/shared/lib/api-client";
 import { setAuthToken } from "@/shared/lib/cookies";
+import {
+  AuthError,
+  NetworkError,
+  ValidationError,
+  ApiError,
+} from "@/shared/lib/error";
+import { handleError } from "@/shared/lib/handle-api-error";
 
 type LoginMutationOptions = {
-  onSuccess?: (data: unknown, variables: LoginCredentials, context: unknown) => void;
-  onError?: (error: Error, variables: LoginCredentials, context: unknown) => void;
+  onSuccess?: (
+    data: unknown,
+    variables: LoginCredentials,
+    context: unknown
+  ) => void;
+  onError?: (
+    error: Error,
+    variables: LoginCredentials,
+    context: unknown
+  ) => void;
 };
 
-export const useLoginMutation = ({ onSuccess, onError }: LoginMutationOptions = {}) => {
+export const useLoginMutation = ({
+  onSuccess,
+  onError,
+}: LoginMutationOptions = {}) => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: async (credentials: LoginCredentials & { rememberMe?: boolean }) => {
-      const response = await api.post('/auth/login', credentials, { requiresAuth: false });
+    mutationFn: async (
+      credentials: LoginCredentials & { rememberMe?: boolean }
+    ) => {
+      const response = await api.post("/auth/login", credentials, {
+        requiresAuth: false,
+      });
       // Extract token from response and store in cookie
       const token = response.data?.token || response.token;
       if (token) {
@@ -24,6 +46,7 @@ export const useLoginMutation = ({ onSuccess, onError }: LoginMutationOptions = 
       }
       return response;
     },
+
     onSuccess: (data, variables, ctx) => {
       // Extract user from response
       const user = data.data?.user || data.user;
@@ -38,12 +61,10 @@ export const useLoginMutation = ({ onSuccess, onError }: LoginMutationOptions = 
       }
     },
     onError: (error, variables, ctx) => {
-      console.error("Login error:", error);
-      // Call custom error handler
+      handleError(error);
       if (onError) {
         onError(error, variables, ctx);
       }
     },
   });
 };
-

@@ -20,7 +20,6 @@ import {
   registerSchema,
 } from "@/features/auth/register/lib/register";
 import { useRegisterMutation } from "../api/use-register";
-import { Toast } from "@/shared/ui/toast";
 
 export const RegisterForm = () => {
   const { mutate: Register } = useRegisterMutation({
@@ -29,10 +28,7 @@ export const RegisterForm = () => {
       console.log(Variables);
       router.push("/");
     },
-    onError: (error, Variables) => {
-      Toast.error(error.message);
-      console.log(Variables);
-    },
+
   });
   const {
     register,
@@ -44,7 +40,6 @@ export const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(true);
-  const [registerError, setRegisterError] = useState({ massage: "" });
 
   const router = useRouter();
 
@@ -56,7 +51,7 @@ export const RegisterForm = () => {
         password: data.password,
       });
     } catch (error) {
-      setRegisterError({ massage: "Registration failed. Please try again." });
+      // setRegisterError({ massage: "Registration failed. Please try again." });
     }
   };
 
@@ -146,7 +141,7 @@ export const RegisterForm = () => {
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             {/* Submit Error Message */}
-            {registerError.massage && (
+            {/* {registerError.massage && (
               <div
                 className="flex items-center space-x-3 p-4 rounded-lg border"
                 style={{
@@ -159,7 +154,7 @@ export const RegisterForm = () => {
                 <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <span className="text-sm">{registerError.massage}</span>
               </div>
-            )}
+            )} */}
             {/* Name Fields */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">

@@ -4,9 +4,11 @@
  * Handles all HTTP requests to the backend with authentication
  */
 import { getAuthToken } from "./cookies";
+import { ApiError, AuthError, NetworkError, ValidationError } from "./error";
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://vegetable-shop-backend.onrender.com/api";
 
 export interface ApiRequestOptions extends RequestInit {
   requiresAuth?: boolean;
@@ -26,7 +28,7 @@ export async function apiClient(
     "Content-Type": "application/json",
     ...(headers as Record<string, string>),
   };
-  
+
   // Add authorization token if required
   if (requiresAuth) {
     const token = getAuthToken();
@@ -44,10 +46,42 @@ export async function apiClient(
     ...restOptions,
     headers: requestHeaders,
   });
-
   return response;
 }
 
+async function handleResponse<T>(
+  response: Response,
+  endpoint: string
+): Promise<T> {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({
+      message: response.statusText || "Request failed",
+    }));
+    switch (response.status) {
+      case 401:
+        throw new AuthError(endpoint, errorData);
+      case 422:
+        throw new ValidationError(endpoint, errorData.errors || {}, errorData);
+      case 403:
+        throw new ApiError(403, errorData.message || "Forbidden", endpoint, errorData);
+      case 404:
+        throw new ApiError(404, errorData.message || "Not Found", endpoint, errorData);
+      case 500:
+        throw new ApiError(500, errorData.message || "Server Error", endpoint, errorData);
+      default:
+        throw new ApiError(
+          response.status,
+          errorData.message || `Request failed with status ${response.status}`,
+          endpoint,
+          errorData
+        );
+    }
+  }
+
+  // Parse and return successful response
+  const text = await response.text();
+  return text ? JSON.parse(text) : ({} as T);
+}
 /**
  * Typed API methods
  */
@@ -56,108 +90,88 @@ export const api = {
     endpoint: string,
     options?: ApiRequestOptions
   ): Promise<T> => {
-    const response = await apiClient(endpoint, { ...options, method: "GET" });
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(error.message || `GET ${endpoint} failed`);
+    try {
+      const response = await apiClient(endpoint, { ...options, method: "GET" });
+      return handleResponse<T>(response, endpoint);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new NetworkError('Network request failed. Please check your connection.');
+      }
+      throw error;
     }
-
-    return response.json();
-  
   },
-  post: async (
+  post: async <T = any>(
     endpoint: string,
     data?: any,
     options?: ApiRequestOptions
-  ): Promise<any> => {
-    const response = await apiClient(endpoint, {
-      ...options,
-      method: "POST",
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(error.message);
+  ): Promise<T> => {
+    try {
+      const response = await apiClient(endpoint, {
+        ...options,
+        method: "POST",
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return handleResponse<T>(response, endpoint);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new NetworkError('Network request failed. Please check your connection.');
+      }
+      throw error;
     }
-    if (response) {
-    }
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
   },
-
-  /**
-   * PUT request
-   */
-
-  put: async (
+  put: async <T = any>(
     endpoint: string,
     data?: any,
     options?: ApiRequestOptions
-  ): Promise<any> => {
-    const response = await apiClient(endpoint, {
-      ...options,
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(error.message || `PUT ${endpoint} failed`);
+  ): Promise<T> => {
+    try {
+      const response = await apiClient(endpoint, {
+        ...options,
+        method: "PUT",
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return handleResponse<T>(response, endpoint);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new NetworkError('Network request failed. Please check your connection.');
+      }
+      throw error;
     }
-
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;  },
-
-  /**
-   * PATCH request
-   */
-  patch: async (
+  },
+  patch: async <T = any>(
     endpoint: string,
     data?: any,
     options?: ApiRequestOptions
-  ): Promise<any> => {
-    const response = await apiClient(endpoint, {
-      ...options,
-      method: "PATCH",
-      body: data ? JSON.stringify(data) : undefined,
-    });
-
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(error.message || `PATCH ${endpoint} failed`);
+  ): Promise<T> => {
+    try {
+      const response = await apiClient(endpoint, {
+        ...options,
+        method: "PATCH",
+        body: data ? JSON.stringify(data) : undefined,
+      });
+      return handleResponse<T>(response, endpoint);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new NetworkError('Network request failed. Please check your connection.');
+      }
+      throw error;
     }
-
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;  },
-
-  /**
-   * DELETE request
-   */
-  delete: async(
+  },
+  delete: async <T = any>(
     endpoint: string,
     options?: ApiRequestOptions
-  ): Promise<any> => {
-    const response = await apiClient(endpoint, {
-      ...options,
-      method: "DELETE",
-    });
-
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Request failed" }));
-      throw new Error(error.message || `DELETE ${endpoint} failed`);
+  ): Promise<T> => {
+    try {
+      const response = await apiClient(endpoint, {
+        ...options,
+        method: "DELETE",
+      });
+      return handleResponse<T>(response, endpoint);
+    } catch (error) {
+      if (error instanceof TypeError) {
+        throw new NetworkError('Network request failed. Please check your connection.');
+      }
+      throw error;
     }
-
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;  },
+  },
 };

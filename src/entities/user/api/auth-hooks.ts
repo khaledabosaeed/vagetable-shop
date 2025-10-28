@@ -39,7 +39,6 @@ async function fetchUserProfile() {
     throw error;
   }
 }
-
 export const useUser = () => {
   return useQuery({
     queryKey: userQueryKeys.me(),

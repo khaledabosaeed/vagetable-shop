@@ -1,4 +1,5 @@
 import { api } from "@/shared/lib/api-client";
+import { handleError } from "@/shared/lib/handle-api-error";
 import { useMutation } from "@tanstack/react-query";
 
 type Tforgetpass = {
@@ -8,13 +9,17 @@ type Tforgetpass = {
 const useSendRestPasswordEmail = ({ onError, onSuccess }: Tforgetpass = {}) => {
   return useMutation({
     mutationFn: async (credentials: string) => {
-      return await api.post("/auth/forgot-password", {email:credentials}, {
-        requiresAuth: false
-      });
+      return await api.post(
+        "/auth/forgot-password",
+        { email: credentials },
+        {
+          requiresAuth: false,
+        }
+      );
     },
     onSuccess,
     onError: (error, variables, ctx) => {
-      console.error("Forgot password error: ", error);
+      handleError(error);
       if (onError) {
         onError(error, variables, ctx);
       }

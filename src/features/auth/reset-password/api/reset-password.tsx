@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { resetPassword } from "../lib/type";
 import { api } from "@/shared/lib/api-client";
+import { handleError } from "@/shared/lib/handle-api-error";
 
 type TestPassword = {
   onSuccess?: (data: unknown, variables: resetPassword, ctx: unknown) => void;
@@ -20,7 +21,7 @@ const useRestPassword = ({ onSuccess, onError }: TestPassword = {}) => {
       }
     },
     onError(error, variables, ctx) {
-      console.error("Forgot password error: ", error);
+      handleError(error);
       if (onError) {
         onError(error, variables, ctx);
       }

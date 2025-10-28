@@ -36,11 +36,6 @@ function EnterEmail({
       setSuccess("A verification code has been sent to your email address.");
       setLoading(false);
     },
-    onError: (error) => {
-      console.error("Login error:", error);
-      setError(error.message);
-      setLoading(false);
-    }
   })
 
   const handleSubmit = async (e: React.FormEvent) => {

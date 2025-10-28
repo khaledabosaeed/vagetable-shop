@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RegisterCredentials } from "../lib/type";
 import { userQueryKeys } from "@/entities/user/api/auth-hooks";
 import { api } from "@/shared/lib/api-client";
+import { handleError } from "@/shared/lib/handle-api-error";
 
 type RegisterMutationOptions = {
   onSuccess?: (
@@ -41,9 +42,7 @@ export const useRegisterMutation = ({
       }
     },
     onError: (error, variables, ctx) => {
-      console.error("Registration error:", error);
-
-      // Call custom error handler
+      handleError(error);
       if (onError) {
         onError(error, variables, ctx);
       }

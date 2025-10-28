@@ -24,7 +24,7 @@ export const LoginForm = () => {
   const isAuthenticated = useIsAuthenticated();
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  // const [loginError, setLoginError] = useState<string | null>(null);
 
   const { mutate: login, isPending } = useLoginMutation({
     onSuccess: (data) => {
@@ -35,15 +35,7 @@ export const LoginForm = () => {
       console.log(data);
       router.push("/");
       // window.location.reload();
-    },
-    onError: (error) => {
-      console.error("Login error:", error);
-      setLoginError(error.message);
-      Toast.error(error.message || "Login failed. Please try again.", {
-        position: "top-center",
-        autoClose: 4000,
-      });
-    },
+    }
   });
   const {
     register,
@@ -53,10 +45,9 @@ export const LoginForm = () => {
     resolver: zodResolver(LoginSchema),
   });
   const onSubmit = (data: LoginFormData) => {
-    setLoginError(null);
+    // setLoginError(null);
     login({ ...data, rememberMe });
   };
-
   // Use isPending instead of isSubmitting for loading state
   const isSubmitting = isPending;
 
@@ -172,21 +163,7 @@ export const LoginForm = () => {
 
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Error Message */}
-            {loginError && (
-              <div
-                className="flex items-center space-x-3 p-4 rounded-lg border"
-                style={{
-                  backgroundColor: "hsl(var(--error) / 0.1)",
-                  borderColor: "hsl(var(--error) / 0.3)",
-                  color: "hsl(var(--error))",
-                }}
-                role="alert"
-              >
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">{loginError}</span>
-              </div>
-            )}
+
             {/* Email Field */}
             <div className="space-y-2">
               <label
