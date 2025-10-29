@@ -22,14 +22,7 @@ declare namespace Orders {
 }
 
 declare namespace Poudects {
-    export interface Category {
-        id: number;
-        name: string;
-        description: string;
-        image_url?: string;
-        created_at?: string;
-        updated_at?: string;
-    }
+
     export interface proudect {
         id: number;
         name: string;
@@ -78,5 +71,3 @@ export type OrderResponse = ApiResponse<Order>;
 export type OrdersResponse = ApiResponse<PaginatedResponse<Order>>;
 export type ProductResponse = ApiResponse<Product>;
 export type ProductsResponse = ApiResponse<PaginatedResponse<Product>>;
-export type CategoryResponse = ApiResponse<Category>;
-export type CategoriesResponse = ApiResponse<Category[]>;

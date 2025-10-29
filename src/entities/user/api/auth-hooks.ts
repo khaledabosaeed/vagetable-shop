@@ -1,42 +1,22 @@
-
-
 import { api } from "@/shared/lib/api-client";
+import { handleError } from "@/shared/lib/handle-api-error";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
 
 export const userQueryKeys = {
   all: ["user"] as const,
   me: () => [...userQueryKeys.all, "me"] as const,
 };
 
-
 async function fetchUserProfile() {
   try {
     const response = await api.get(`/auth/me`, {
       requiresAuth: true,
     });
-
-    // 401 = Not authenticated (normal case, not an error)
-    if (response.status === 401) {
-      return null;
-    }
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.error || "your session is end , need to login again"
-      );
-    }
-    console.log(response);
     const data = await response.json();
     console.log(data.user.data, "from the ts");
     return data.user.data;
   } catch (error) {
-    console.error("User profile fetch error:", error);
-    if (error instanceof TypeError) {
-      return null;
-    }
-    throw error;
+    handleError(error);
   }
 }
 export const useUser = () => {
